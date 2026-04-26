@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EmilMp3Music</title>
+    
+    <meta name="theme-color" content="#090909">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3844/3844724.png">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --brand-color: #a855f7;
+            --bg-deep: #090909;
+            --bg-soft: #121212;
+            --bg-card: #1e1e1e;
+            --text-main: #ffffff;
+            --text-dim: #a7a7a7;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { background-color: var(--bg-deep); color: var(--text-main); font-family: 'Segoe UI', sans-serif; height: 100vh; overflow: hidden; }
+
+        .app-wrapper { display: flex; height: calc(100vh - 95px); }
+
+        /* Sidebar - Desktop */
+        .sidebar { width: 260px; background: var(--bg-deep); padding: 24px 16px; display: flex; flex-direction: column; border-right: 1px solid #1a1a1a; }
+        .logo-container { display: flex; align-items: center; gap: 10px; margin-bottom: 30px; }
+        .custom-logo { width: 35px; height: 35px; background: linear-gradient(135deg, var(--brand-color), #6366f1); border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+        .logo-text { font-size: 20px; font-weight: 800; background: linear-gradient(to right, #fff, #999); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+        /* Content Area */
+        .content-area { flex: 1; background: linear-gradient(to bottom, #1a1a1a, var(--bg-deep) 50%); overflow-y: auto; padding: 30px; scroll-behavior: smooth; }
+        .songs-container { display: grid; gap: 10px; }
+
+        @media (min-width: 769px) {
+            .songs-container { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 24px; }
+            .song-box { background: var(--bg-card); padding: 18px; border-radius: 12px; cursor: pointer; transition: 0.3s; text-align: center; }
+            .song-box:hover { background: #2a2a2a; transform: translateY(-5px); }
+            .song-cover { width: 100%; aspect-ratio: 1; background: #282828; border-radius: 8px; margin-bottom: 12px; display: flex; align-items: center; justify-content: center; font-size: 35px; color: #444; }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar { display: none; }
+            .song-box { display: flex; align-items: center; gap: 14px; padding: 12px; border-radius: 10px; background: rgba(255,255,255,0.03); margin-bottom: 8px; }
+            .song-cover { width: 50px; height: 50px; background: #282828; border-radius: 6px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 18px; }
+            .content-area { padding: 20px 15px 120px 15px; }
+        }
+
+        /* Bottom Player */
+        .bottom-player { position: fixed; bottom: 0; width: 100%; height: 95px; background: #000; border-top: 1px solid #1a1a1a; display: flex; align-items: center; padding: 0 20px; z-index: 1000; }
+        .playing-info { width: 30%; display: flex; align-items: center; gap: 12px; }
+        .control-center { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+        
+        .progress-wrapper { display: flex; align-items: center; gap: 12px; width: 100%; max-width: 500px; }
+        input[type="range"] { flex: 1; accent-color: var(--brand-color); cursor: pointer; height: 4px; }
+        .time { font-size: 11px; color: var(--text-dim); min-width: 35px; }
+
+        .main-controls { display: flex; align-items: center; gap: 25px; font-size: 18px; color: var(--text-dim); }
+        .play-circle { background: white; color: black; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; }
+        
+        .upload-btn { background: var(--brand-color); border: none; padding: 12px; border-radius: 25px; color: white; font-weight: bold; cursor: pointer; margin-top: auto; }
+
+        /* Mobil üçün əlavə "Mahnı Əlavə Et" düyməsi */
+        .mobile-add { display: none; position: fixed; right: 20px; bottom: 110px; background: var(--brand-color); width: 55px; height: 55px; border-radius: 50%; justify-content: center; align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.5); z-index: 999; }
+        @media (max-width: 768px) { .mobile-add { display: flex; } }
+    </style>
+</head>
+<body>
+
+    <div class="app-wrapper">
+        <aside class="sidebar">
+            <div class="logo-container">
+                <div class="custom-logo"><i class="fas fa-headphones-alt" style="color: white;"></i></div>
+                <div class="logo-text">EmilMp3Music</div>
+            </div>
+            <button class="upload-btn" onclick="document.getElementById('fInp').click()">Mahnı Əlavə Et</button>
+            <input type="file" id="fInp" accept="audio/*" style="display: none;" onchange="upload()">
+        </aside>
+
+        <main class="content-area">
+            <h2 style="margin-bottom: 20px;">Kitabxanan</h2>
+            <div id="songsList" class="songs-container"></div>
+        </main>
+    </div>
+
+    <div class="mobile-add" onclick="document.getElementById('fInp').click()"><i class="fas fa-plus" style="color: white; font-size: 20px;"></i></div>
+
+    <footer class="bottom-player">
+        <div class="playing-info">
+            <div class="song-cover" style="width: 45px; height: 45px; margin: 0; font-size: 15px;"><i class="fas fa-music"></i></div>
+            <div style="overflow: hidden;">
+                <h4 id="trackTitle" style="font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Seçilməyib</h4>
+                <p style="font-size: 10px; color: var(--text-dim);">EmilMp3Music</p>
+            </div>
+        </div>
+
+        <div class="control-center">
+            <div class="main-controls">
+                <i class="fas fa-backward-step" onclick="prevSong()"></i>
+                <div class="play-circle" onclick="togglePlay()"><i id="playIcon" class="fas fa-play"></i></div>
+                <i class="fas fa-forward-step" onclick="nextSong()"></i>
+            </div>
+            <div class="progress-wrapper">
+                <span class="time" id="cTime">0:00</span>
+                <input type="range" id="prog" value="0" max="100">
+                <span class="time" id="tTime">0:00</span>
+            </div>
+        </div>
+        <div style="width: 30%;" class="extra"></div>
+    </footer>
+
+    <audio id="mainAudio"></audio>
+
+    <script>
+        let db;
+        let playlist = [];
+        let currentIndex = -1;
+        const audio = document.getElementById('mainAudio');
+        const playIcon = document.getElementById('playIcon');
+
+        // Verilənlər bazasını başlat
+        const request = indexedDB.open("EmilMp3Music_PWA", 1);
+        request.onupgradeneeded = e => e.target.result.createObjectStore("songs", { keyPath: "id", autoIncrement: true });
+        request.onsuccess = e => { db = e.target.result; loadPlaylist(); };
+
+        function upload() {
+            const file = document.getElementById('fInp').files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = e => {
+                const tx = db.transaction("songs", "readwrite");
+                tx.objectStore("songs").add({ name: file.name.replace('.mp3', ''), data: e.target.result });
+                tx.oncomplete = loadPlaylist;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function loadPlaylist() {
+            playlist = [];
+            const listUI = document.getElementById('songsList');
+            listUI.innerHTML = "";
+            db.transaction("songs").objectStore("songs").openCursor().onsuccess = e => {
+                const cursor = e.target.result;
+                if (cursor) {
+                    playlist.push(cursor.value);
+                    const idx = playlist.length - 1;
+                    const div = document.createElement('div');
+                    div.className = 'song-box';
+                    div.innerHTML = `<div class="song-cover"><i class="fas fa-music"></i></div><div><h4>${cursor.value.name}</h4></div>`;
+                    div.onclick = () => playSong(idx);
+                    listUI.appendChild(div);
+                    cursor.continue();
+                }
+            };
+        }
+
+        function playSong(index) {
+            if (index < 0 || index >= playlist.length) return;
+            currentIndex = index;
+            audio.src = playlist[currentIndex].data;
+            audio.play().then(() => updateMediaSession());
+            document.getElementById('trackTitle').innerText = playlist[currentIndex].name;
+            playIcon.className = "fas fa-pause";
+        }
+
+        function togglePlay() {
+            if (!audio.src && playlist.length > 0) return playSong(0);
+            if (audio.paused) { audio.play(); playIcon.className = "fas fa-pause"; }
+            else { audio.pause(); playIcon.className = "fas fa-play"; }
+        }
+
+        function nextSong() { playSong((currentIndex + 1) % playlist.length); }
+        function prevSong() { playSong((currentIndex - 1 + playlist.length) % playlist.length); }
+
+        function updateMediaSession() {
+            if ('mediaSession' in navigator) {
+                navigator.mediaSession.metadata = new MediaMetadata({
+                    title: playlist[currentIndex].name,
+                    artist: 'EmilMp3Music',
+                    artwork: [{ src: 'https://cdn-icons-png.flaticon.com/512/3844/3844724.png', sizes: '512x512', type: 'image/png' }]
+                });
+                navigator.mediaSession.setActionHandler('play', togglePlay);
+                navigator.mediaSession.setActionHandler('pause', togglePlay);
+                navigator.mediaSession.setActionHandler('previoustrack', prevSong);
+                navigator.mediaSession.setActionHandler('nexttrack', nextSong);
+            }
+        }
+
+        audio.onended = () => nextSong();
+        audio.ontimeupdate = () => {
+            const p = (audio.currentTime / audio.duration) * 100;
+            document.getElementById('prog').value = p || 0;
+            document.getElementById('cTime').innerText = fmt(audio.currentTime);
+            if (audio.duration) document.getElementById('tTime').innerText = fmt(audio.duration);
+        };
+
+        document.getElementById('prog').oninput = function() { audio.currentTime = (this.value * audio.duration) / 100; };
+        function fmt(s) { let m = Math.floor(s/60); let sec = Math.floor(s%60); return `${m}:${sec < 10 ? '0'+sec : sec}`; }
+
+        // Service Worker Qeydiyyatı (PWA dəstəyi üçün)
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('data:text/javascript;base64,' + btoa('self.addEventListener("fetch", (event) => {});'));
+            });
+        }
+    </script>
+</body>
+</html>
