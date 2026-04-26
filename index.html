@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EmilMp3Music Offline</title>
+    <title>EmilMp3Music</title>
     
     <meta name="theme-color" content="#090909">
     <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3844/3844724.png">
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -25,25 +26,43 @@
         body { background-color: var(--bg-deep); color: var(--text-main); font-family: 'Segoe UI', sans-serif; height: 100vh; overflow: hidden; }
 
         .app-wrapper { display: flex; height: calc(100vh - 95px); }
+
+        /* Sidebar - Desktop */
         .sidebar { width: 260px; background: var(--bg-deep); padding: 24px 16px; display: flex; flex-direction: column; border-right: 1px solid #1a1a1a; }
         .logo-container { display: flex; align-items: center; gap: 10px; margin-bottom: 30px; }
         .custom-logo { width: 35px; height: 35px; background: linear-gradient(135deg, var(--brand-color), #6366f1); border-radius: 10px; display: flex; align-items: center; justify-content: center; }
-        
+        .logo-text { font-size: 20px; font-weight: 800; color: white; }
+
+        /* Content Area */
         .content-area { flex: 1; background: linear-gradient(to bottom, #1a1a1a, var(--bg-deep) 50%); overflow-y: auto; padding: 30px; }
         .songs-container { display: grid; gap: 10px; }
+
+        @media (min-width: 769px) {
+            .songs-container { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 24px; }
+            .song-box { background: var(--bg-card); padding: 18px; border-radius: 12px; cursor: pointer; transition: 0.3s; text-align: center; }
+            .song-box:hover { background: #2a2a2a; transform: translateY(-5px); }
+            .song-cover { width: 100%; aspect-ratio: 1; background: #282828; border-radius: 8px; margin-bottom: 12px; display: flex; align-items: center; justify-content: center; font-size: 35px; color: #444; }
+        }
 
         @media (max-width: 768px) {
             .sidebar { display: none; }
             .song-box { display: flex; align-items: center; gap: 14px; padding: 12px; border-radius: 10px; background: rgba(255,255,255,0.03); margin-bottom: 8px; }
-            .song-cover { width: 50px; height: 50px; background: #282828; border-radius: 6px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+            .song-cover { width: 50px; height: 50px; background: #282828; border-radius: 6px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 18px; }
             .content-area { padding: 20px 15px 120px 15px; }
         }
 
+        /* Player Bar */
         .bottom-player { position: fixed; bottom: 0; width: 100%; height: 95px; background: #000; border-top: 1px solid #1a1a1a; display: flex; align-items: center; padding: 0 20px; z-index: 1000; }
+        .playing-info { width: 30%; display: flex; align-items: center; gap: 12px; }
         .control-center { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 8px; }
-        .play-circle { background: white; color: black; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; }
         
-        input[type="range"] { width: 100%; max-width: 500px; accent-color: var(--brand-color); height: 4px; cursor: pointer; }
+        .progress-wrapper { display: flex; align-items: center; gap: 12px; width: 100%; max-width: 500px; }
+        input[type="range"] { flex: 1; accent-color: var(--brand-color); cursor: pointer; height: 4px; }
+        .time { font-size: 11px; color: var(--text-dim); min-width: 35px; }
+
+        .main-controls { display: flex; align-items: center; gap: 25px; font-size: 18px; color: var(--text-dim); }
+        .play-circle { background: white; color: black; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+
         .upload-btn { background: var(--brand-color); border: none; padding: 12px; border-radius: 25px; color: white; font-weight: bold; cursor: pointer; margin-top: auto; }
         .mobile-add { display: none; position: fixed; right: 20px; bottom: 110px; background: var(--brand-color); width: 55px; height: 55px; border-radius: 50%; justify-content: center; align-items: center; z-index: 999; }
         @media (max-width: 768px) { .mobile-add { display: flex; } }
@@ -55,14 +74,14 @@
         <aside class="sidebar">
             <div class="logo-container">
                 <div class="custom-logo"><i class="fas fa-headphones-alt" style="color: white;"></i></div>
-                <div style="font-weight: 800; font-size: 20px;">EmilMp3Music</div>
+                <div class="logo-text">EmilMp3Music</div>
             </div>
             <button class="upload-btn" onclick="document.getElementById('fInp').click()">Mahnı Əlavə Et</button>
             <input type="file" id="fInp" accept="audio/*" style="display: none;" onchange="upload()">
         </aside>
 
         <main class="content-area">
-            <h2 id="statusTitle" style="margin-bottom: 20px;">Kitabxanan</h2>
+            <h2 id="pageTitle" style="margin-bottom: 20px;">Kitabxanan</h2>
             <div id="songsList" class="songs-container"></div>
         </main>
     </div>
@@ -70,17 +89,25 @@
     <div class="mobile-add" onclick="document.getElementById('fInp').click()"><i class="fas fa-plus" style="color: white; font-size: 20px;"></i></div>
 
     <footer class="bottom-player">
-        <div style="width: 30%; display: flex; align-items: center; gap: 10px;">
-            <div id="miniCover" class="song-cover" style="width: 40px; height: 40px; background: #222; border-radius: 4px; display: flex; align-items: center; justify-content: center;"><i class="fas fa-music" style="font-size: 12px;"></i></div>
-            <div style="overflow: hidden;"><h4 id="trackTitle" style="font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Seçilməyib</h4></div>
+        <div class="playing-info">
+            <div class="song-cover" style="width: 45px; height: 45px; margin: 0; font-size: 15px; background: #1a1a1a;"><i class="fas fa-music"></i></div>
+            <div style="overflow: hidden;">
+                <h4 id="trackTitle" style="font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Seçilməyib</h4>
+                <p style="font-size: 10px; color: var(--text-dim);">EmilMp3Music</p>
+            </div>
         </div>
+
         <div class="control-center">
-            <div style="display: flex; align-items: center; gap: 20px; font-size: 18px;">
+            <div class="main-controls">
                 <i class="fas fa-backward-step" onclick="prevSong()"></i>
                 <div class="play-circle" onclick="togglePlay()"><i id="playIcon" class="fas fa-play"></i></div>
                 <i class="fas fa-forward-step" onclick="nextSong()"></i>
             </div>
-            <input type="range" id="prog" value="0" max="100">
+            <div class="progress-wrapper">
+                <span class="time" id="cTime">0:00</span>
+                <input type="range" id="prog" value="0" max="100">
+                <span class="time" id="tTime">0:00</span>
+            </div>
         </div>
         <div style="width: 30%;"></div>
     </footer>
@@ -94,8 +121,7 @@
         const audio = document.getElementById('mainAudio');
         const playIcon = document.getElementById('playIcon');
 
-        // Baza açılır (Mahnılar bura internetsiz yazılır)
-        const request = indexedDB.open("EmilOfflineDB", 2);
+        const request = indexedDB.open("EmilMp3Music_Final", 1);
         request.onupgradeneeded = e => e.target.result.createObjectStore("songs", { keyPath: "id", autoIncrement: true });
         request.onsuccess = e => { db = e.target.result; loadPlaylist(); };
 
@@ -105,7 +131,7 @@
             const reader = new FileReader();
             reader.onload = e => {
                 const tx = db.transaction("songs", "readwrite");
-                tx.objectStore("songs").add({ name: file.name.replace('.mp3',''), data: e.target.result });
+                tx.objectStore("songs").add({ name: file.name.replace('.mp3', ''), data: e.target.result });
                 tx.oncomplete = loadPlaylist;
             };
             reader.readAsDataURL(file);
@@ -131,14 +157,16 @@
         }
 
         function playSong(index) {
+            if (index < 0 || index >= playlist.length) return;
             currentIndex = index;
             audio.src = playlist[currentIndex].data;
-            audio.play();
+            audio.play().then(() => updateMediaSession());
             document.getElementById('trackTitle').innerText = playlist[currentIndex].name;
             playIcon.className = "fas fa-pause";
         }
 
         function togglePlay() {
+            if (!audio.src && playlist.length > 0) return playSong(0);
             if (audio.paused) { audio.play(); playIcon.className = "fas fa-pause"; }
             else { audio.pause(); playIcon.className = "fas fa-play"; }
         }
@@ -146,28 +174,45 @@
         function nextSong() { playSong((currentIndex + 1) % playlist.length); }
         function prevSong() { playSong((currentIndex - 1 + playlist.length) % playlist.length); }
 
-        audio.ontimeupdate = () => { document.getElementById('prog').value = (audio.currentTime / audio.duration) * 100 || 0; };
-        document.getElementById('prog').oninput = function() { audio.currentTime = (this.value * audio.duration) / 100; };
-        audio.onended = () => nextSong();
-
-        // OFFLINE DESTEYİ: Service Worker
-        if ('serviceWorker' in navigator) {
-            const swCode = `
-                const CACHE_NAME = 'emil-mp3-v1';
-                self.addEventListener('install', (e) => {
-                    e.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(['./'])));
+        function updateMediaSession() {
+            if ('mediaSession' in navigator) {
+                navigator.mediaSession.metadata = new MediaMetadata({
+                    title: playlist[currentIndex].name,
+                    artist: 'EmilMp3Music',
+                    artwork: [{ src: 'https://cdn-icons-png.flaticon.com/512/3844/3844724.png', sizes: '512x512', type: 'image/png' }]
                 });
-                self.addEventListener('fetch', (e) => {
-                    e.respondWith(caches.match(e.request).then((res) => res || fetch(e.request)));
-                });
-            `;
-            const blob = new Blob([swCode], { type: 'text/javascript' });
-            navigator.serviceWorker.register(URL.createObjectURL(blob));
+                navigator.mediaSession.setActionHandler('play', togglePlay);
+                navigator.mediaSession.setActionHandler('pause', togglePlay);
+                navigator.mediaSession.setActionHandler('previoustrack', prevSong);
+                navigator.mediaSession.setActionHandler('nexttrack', nextSong);
+            }
         }
 
-        // İnternet statusunu yoxla
-        window.addEventListener('offline', () => { document.getElementById('statusTitle').innerText = "Kitabxanan (Offline Rejim)"; });
-        window.addEventListener('online', () => { document.getElementById('statusTitle').innerText = "Kitabxanan"; });
+        audio.onended = () => nextSong();
+        audio.ontimeupdate = () => {
+            document.getElementById('prog').value = (audio.currentTime / audio.duration) * 100 || 0;
+            document.getElementById('cTime').innerText = fmt(audio.currentTime);
+            if (audio.duration) document.getElementById('tTime').innerText = fmt(audio.duration);
+        };
+        document.getElementById('prog').oninput = function() { audio.currentTime = (this.value * audio.duration) / 100; };
+        function fmt(s) { let m = Math.floor(s/60); let sec = Math.floor(s%60); return `${m}:${sec < 10 ? '0'+sec : sec}`; }
+
+        // SERVICE WORKER - OFFLINE DESTEK
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                const swCode = `
+                    const CACHE_NAME = 'emil-cache-v3';
+                    const assets = [location.href, 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css'];
+                    self.addEventListener('install', e => e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(assets))));
+                    self.addEventListener('fetch', e => e.respondWith(caches.match(e.request).then(r => r || fetch(e.request))));
+                `;
+                const blob = new Blob([swCode], { type: 'text/javascript' });
+                navigator.serviceWorker.register(URL.createObjectURL(blob));
+            });
+        }
+
+        window.addEventListener('offline', () => document.getElementById('pageTitle').innerText = "Kitabxanan (Oflayn)");
+        window.addEventListener('online', () => document.getElementById('pageTitle').innerText = "Kitabxanan");
     </script>
 </body>
 </html>
